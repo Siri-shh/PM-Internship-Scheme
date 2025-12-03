@@ -1,6 +1,2 @@
 [build]
-nixpacks = false
 dockerfile = "ml-service/pm_internship_pipeline/Dockerfile"
-
-[deploy]
-restartPolicyType = "on_failure"
