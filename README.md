@@ -1,69 +1,192 @@
-# PM Internship Allocation Portal
+# 🚀 SIH_BSoD — PM Internship Allocation Portal
 
-A centralized platform developed for the **PM Internship Scheme**, designed to facilitate fair, transparent, and efficient internship allocations using an advanced stable matching algorithm enhanced with machine learning.
+> **Smart India Hackathon (SIH) Project**
+> A centralized, secure, and ML-driven platform for **fair, transparent, and auditable internship allocation** under the **Prime Minister Internship Scheme**.
+<p align="center">
+  <img width="327" height="345" alt="image" src="https://github.com/user-attachments/assets/0ac163ba-aee4-4c4d-8f6a-f622223912f5" />
+</p>
 
-## 🚀 Features
+---
+
+## 📌 Table of Contents
+
+1. Introduction & Vision
+2. Problem Statement
+3. Solution Overview
+4. Core Features
+5. System Architecture
+6. Allocation Engine (ML Backend)
+7. Technology Stack
+8. Project Structure
+9. Getting Started
+10. Environment Configuration
+11. Database Architecture
+12. API Overview (Exhaustive)
+13. Security, Authentication & Authorization
+14. Licensing & Legal Compliance
+15. Screenshots & Demo Guide
+16. Contributors
+
+---
+
+## 1️⃣ Introduction & Vision
+
+The **PM Internship Allocation Portal (SIH_BSoD)** is a full-stack platform built to manage the **end-to-end lifecycle of internship allocation** at a national scale. The system prioritizes **fairness, transparency, security, scalability, and auditability**, making it suitable for real-world government deployment.
+
+---
+
+## 2️⃣ Problem Statement
+
+Large-scale internship allocation programs face challenges such as:
+
+* Manual or opaque allocation mechanisms
+* Inconsistent enforcement of reservation policies
+* Lack of explainability and audit trails
+* Weak identity verification
+* Poor scalability under heavy load
+
+SIH_BSoD addresses these issues using **algorithmic matching**, **machine learning**, and **robust system architecture**.
+
+---
+
+## 3️⃣ Solution Overview
+
+The solution is built as a **distributed, service-oriented system** consisting of:
+
+* A modern **React-based frontend** for all stakeholders
+* A secure **Node.js + Express backend** for business logic
+* A **PostgreSQL database** with schema-level sharding
+* An **external ML allocation engine** (Python) deployed independently
+* Secure integrations with third-party services (Twilio, reCAPTCHA, Email, AI)
+
+---
+
+## 4️⃣ Core Features
 
 ### 🔐 Authentication & Security
-- **Role-Based Access**: Specialized portals for **Students**, **Companies**, and **Admins**
-- **Dual Auth System**: 
-  - Session-based (Passport.js) for web frontend
-  - JWT tokens (access + refresh) for API/mobile clients
-- **Brute Force Protection**: IP-based rate limiting with 5-minute lockout after 5 failed attempts
-- **Google reCAPTCHA v2**: Bot protection on login forms
-- **Content Safety**: Profanity filter for usernames and emails with objection workflow
-- **Password Security**: scrypt-based hashing with unique salts + timing-safe comparison
+
+* Role-Based Access Control (Student, Company, Admin)
+* Dual authentication system (Passport.js sessions + JWT tokens)
+* IP-based brute-force protection (5 attempts → 5-minute lockout)
+* Google reCAPTCHA v2
+* scrypt-based password hashing with unique salts
+* Profanity filtering with admin objection workflow
 
 ### 🎓 Student Portal
-- **Profile Management**: GPA, skills, reservation category, rural/urban, gender
-- **e-KYC Verification**: Aadhaar QR code scanning with Twilio SMS OTP verification
-- **Preference Selection**: Select up to 6 ranked internship preferences
-- **Smart Search**: Search and filter internships by sector, location, tier
-- **Allocation Tracking**: Real-time view of allocation status and offers
-- **Career Hub**: Learning paths, resume tips, and placement insights
-- **Multilingual Chatbot**: AI assistant supporting English, Hinglish, Hindi, and Gujarati
+
+* Profile management (GPA, skills, gender, category, rural/urban)
+* Aadhaar-based e-KYC using QR scanning + Twilio OTP
+* Selection of up to 6 ranked internship preferences
+* Smart search and filtering
+* Real-time allocation tracking
+* Career hub and insights
+* Multilingual AI chatbot (English, Hindi, Hinglish, Gujarati)
 
 ### 🏢 Company Portal
-- **Company Registration**: Onboarding flow with company profile setup
-- **Dashboard**: Real-time KPIs (offers sent, acceptances, acceptance rate)
-- **Candidate View**: View ML-matched allocated candidates
-- **Analytics**: Skill distribution charts and time-series offer tracking
-- **Role Management**: Create and edit internship listings
+
+* Company onboarding and profile setup
+* Internship creation and role management
+* KPI dashboard (offers sent, acceptances, acceptance rate)
+* View ML-matched candidates
+* Skill distribution analytics
 
 ### 🏛️ Admin Portal
-- **Dashboard**: Real-time statistics on applicants, internships, and allocations
-- **Allocation Control**: 
-  - Upload CSV datasets or sync directly from database
-  - Trigger ML allocation engine
-  - View allocation progress in real-time
-- **Fairness Metrics**: Detailed breakdown by gender, category (SC/ST/OBC/EWS), rural/urban
-- **Round Logs**: Step-by-step allocation logs from ML engine
-- **Per-Student Table**: Individual allocation results with preference rank achieved
-- **Model Explanation Panel**: 5-step ML process documentation
-- **Audit Panel**: Session tracking, user events, allocation run history
-- **Verification Requests**: Review and approve/reject profanity objections
-- **Reports & Exports**: Download CSVs from ML backend or database
 
-### 🤖 Allocation Engine (ML Backend)
-- **Algorithm**: Modified Gale-Shapley (Deferred Acceptance) for stable matching
-- **ML Enhancements**: Scoring based on academic history, skill alignment, geographic preferences
-- **Fairness Constraints**: Strict enforcement of reservation policies at every step
-- **Railway Deployment**: External Python ML service at `internship-ml-backend-production.up.railway.app`
+* System-wide dashboards
+* CSV upload or DB sync
+* Trigger and monitor allocation runs
+* Fairness metrics (gender, category, rural/urban)
+* Allocation round logs and per-student breakdown
+* Audit logs (sessions, user events, allocation history)
+* Profanity objection review
+* CSV exports
 
-## 🛠️ Technology Stack
+---
 
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
-| **Backend** | Node.js, Express.js, Passport.js |
-| **Database** | PostgreSQL (Neon Serverless), Drizzle ORM |
-| **Caching** | Redis (optional, with graceful fallback) |
-| **ML Service** | External Python API (Railway) |
-| **OTP/SMS** | Twilio |
-| **Email** | Nodemailer (Gmail SMTP) |
-| **AI Chatbot** | GROQ API (Llama) |
+## 5️⃣ System Architecture
 
-## 📂 Project Structure
+The system architecture defines **how each component interacts**, where **security boundaries exist**, and how **scalability and fault isolation** are achieved.
+
+```
+┌──────────────────────────┐
+│        Users             │
+│  Students | Companies |  │
+│        Admins            │
+└─────────────┬────────────┘
+              │ HTTPS
+              ▼
+┌──────────────────────────┐
+│   Frontend (React 18)    │
+│  - Role-based UI         │
+│  - reCAPTCHA             │
+│  - Chatbot Widget        │
+└─────────────┬────────────┘
+              │ REST APIs
+              ▼
+┌──────────────────────────────────┐
+│ Backend (Node.js + Express)      │
+│                                  │
+│ - Passport.js (Sessions)         │
+│ - JWT Auth (Access + Refresh)    │
+│ - RBAC Middleware                │
+│ - Audit Logging                  │
+│ - Profanity Moderation           │
+│                                  │
+│  ┌──────────────┐  ┌──────────┐  │
+│  │ PostgreSQL   │  │ Redis    │  │
+│  │ (Neon)       │  │          │  |
+│  └──────────────┘  └──────────┘  │
+│                                  │
+└─────────────┬────────────────────┘
+              │ Secure HTTP
+              ▼
+┌──────────────────────────────────┐
+│ ML Allocation Engine (Python)    │
+│                                  │
+│ - Gale–Shapley Stable Matching   │
+│ - ML Scoring                     │
+│ - Reservation Enforcement        │
+│ - Fairness Metrics               │
+│                                  │
+│ Hosted on Railway                │
+└──────────────────────────────────┘
+```
+
+This architecture ensures:
+
+* Strong isolation between frontend, backend, database, and ML
+* Independent scaling of ML services
+* Centralized security and authorization
+* Full auditability for government compliance
+
+---
+
+## 6️⃣ Allocation Engine (ML Backend)
+
+* Algorithm: Modified **Gale–Shapley (Deferred Acceptance)**
+* ML-based scoring using academic history, skills, and geographic preferences
+* Reservation enforcement at every allocation step
+* Fairness metrics generation
+* Deployed as an independent Python service on Railway
+
+---
+
+## 7️⃣ Technology Stack
+
+| Layer      | Technologies                                                       |
+| ---------- | ------------------------------------------------------------------ |
+| Frontend   | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, Framer Motion |
+| Backend    | Node.js, Express.js, Passport.js                                   |
+| Database   | PostgreSQL (Neon Serverless), Drizzle ORM                          |
+| Caching    | Redis (optional)                                                   |
+| ML Service | Python (Railway)                                                   |
+| OTP/SMS    | Twilio                                                             |
+| Email      | Nodemailer (Gmail SMTP)                                            |
+| AI Chatbot | GROQ API (LLaMA)                                                   |
+
+---
+
+## 8️⃣ Project Structure
 
 ```
 frontend_final/
@@ -111,127 +234,150 @@ frontend_final/
 └── docs/                   # Documentation
 ```
 
-## ⚡ Getting Started
+---
 
-### 1. Install Dependencies
+## 9️⃣ Getting Started
+
+### Install Dependencies
+
 ```bash
 npm install
 ```
 
-### 2. Environment Setup
-Copy `.env.example` to `.env` and configure:
+### Run Development Server
+
+```bash
+npm run dev
+```
+
+Server runs on `http://localhost:5000`
+
+### Database Setup
+
+```bash
+npm run db:push
+npx tsx script/seed.ts
+```
+
+---
+
+## 🔟 Environment Configuration
+
+> ⚠️ Never commit `.env` files to version control.
 
 ```env
-# Server
 PORT=5000
-
-# REQUIRED: Security
 JWT_SECRET=your-jwt-secret
 SESSION_SECRET=your-session-secret
-
-# REQUIRED: Database (Neon PostgreSQL)
 DATABASE_URL=postgresql://user:password@host:5432/database
-
-# ML Backend
 ML_BASE_URL=https://internship-ml-backend-production.up.railway.app
-
-# Google reCAPTCHA v2
 VITE_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
-
-# Optional: Twilio OTP
 TWILIO_ACCOUNT_SID=your-twilio-sid
 TWILIO_AUTH_TOKEN=your-twilio-token
 TWILIO_FROM=+1234567890
-
-# Optional: Email Service (Gmail SMTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
-
-# Optional: Redis Caching
 REDIS_URL=redis://localhost:6379
-
-# Optional: AI Chatbot
 GROQ_API_KEY=your-groq-api-key
 ```
 
-### 3. Run Development Server
-```bash
-npm run dev
-```
-Server runs on `http://localhost:5000`
+---
 
-### 4. Database Setup
-```bash
-npm run db:push                    # Push Drizzle schema
-npx tsx script/seed.ts             # Seed initial data
-```
+## 1️⃣1️⃣ Database Architecture
 
-## 🗄️ Database Architecture
+* PostgreSQL with schema-level sharding
+* Tier-based state partitioning
+* Foreign keys enforced with `ON DELETE CASCADE`
 
-### Sharding Strategy
-Internships are partitioned across 3 tier-based schemas:
+---
 
-| Schema | States | Description |
-|--------|--------|-------------|
-| `tier1_db` | MH, KA | Metro Hubs |
-| `tier2_db` | GJ, TG | Growing Cities |
-| `tier3_db` | UP, RJ | Emerging Regions |
+## 1️⃣2️⃣ API Overview (Exhaustive)
 
-### Key Tables
-- `users` - Authentication accounts
-- `candidates` - Student profiles with preferences (pref_1 to pref_6)
-- `internships` - Company internship listings
-- `companies` - Company profiles
-- `allocations` - ML allocation results
-- `audit_sessions` - Login/logout tracking
-- `audit_user_events` - User creation/deletion logs
-- `audit_allocation_runs` - Allocation execution history
-
-### Foreign Key Cascades
-All references configured with `ON DELETE CASCADE` for data integrity.
-
-## 🛡️ Security Features
-
-| Feature | Implementation |
-|---------|----------------|
-| Brute Force | 5 attempts → 5 min IP lockout |
-| Password Hashing | scrypt + random salts |
-| Session Security | HTTP-only cookies, 24hr expiry |
-| JWT Tokens | Access (15min) + Refresh (7d) |
-| Bot Protection | Google reCAPTCHA v2 |
-| Content Filter | Profanity check on registration |
-| Input Validation | Zod schemas for all API inputs |
-
-## 📊 API Endpoints
+All application-level APIs are grouped below. Internal middleware utilities are excluded.
 
 ### Authentication
-- `POST /api/register` - Student registration
-- `POST /api/login` - Session-based login
-- `POST /api/logout` - End session
-- `POST /api/auth/login` - JWT login
-- `POST /api/auth/refresh` - Refresh JWT
+
+* POST `/api/register`
+* POST `/api/login`
+* POST `/api/logout`
+* POST `/api/auth/login`
+* POST `/api/auth/refresh`
 
 ### Students
-- `GET /api/student/:studentId` - Get student profile
-- `POST /api/student/:studentId/preferences` - Submit preferences
-- `GET /api/internships` - List all internships
+
+* GET `/api/student/:studentId`
+* POST `/api/student/:studentId/preferences`
+* GET `/api/internships`
 
 ### Companies
-- `GET /api/company/profile` - Get company profile
-- `POST /api/company/register` - Register company
-- `GET /api/company/allocations` - View allocated candidates
+
+* GET `/api/company/profile`
+* POST `/api/company/register`
+* GET `/api/company/allocations`
 
 ### Admin
-- `GET /api/admin/stats` - Dashboard statistics
-- `POST /api/admin/run-allocation` - Trigger ML allocation
-- `GET /api/admin/audit/*` - Audit logs
+
+* GET `/api/admin/stats`
+* POST `/api/admin/run-allocation`
+* GET `/api/admin/audit/*`
 
 ### ML Integration
-- Proxies requests to Railway-hosted ML backend
-- Endpoints for candidate/internship CSV sync
-- Allocation results download
 
-## 📄 License
-MIT
+* POST `/api/ml/sync/candidates`
+* POST `/api/ml/sync/internships`
+* POST `/api/ml/run`
+* GET `/api/ml/status/:runId`
+* GET `/api/ml/results/:runId`
+* GET `/api/ml/fairness/:runId`
+
+---
+
+## 1️⃣3️⃣ Security, Authentication & Authorization
+
+* Role-based access control at route level
+* Admin-only privileged endpoints
+* Session-based auth + JWT hybrid model
+* Full audit logging
+* No Aadhaar number storage
+
+---
+
+## 1️⃣4️⃣ Licensing & Legal Compliance
+
+This project is licensed under the **MIT License**.
+
+---
+
+## 1️⃣5️⃣ Screenshots & Demo Guide(Yet to be added)
+
+
+
+1. Landing page
+2. Student portal
+3. Company dashboard
+4. Admin dashboard
+5. Allocation results & fairness metrics
+
+---
+
+## 1️⃣6️⃣ Contributors
+
+* **Sirish Saraf (Team Lead)** — Backend Development, Database Management
+  GitHub: [https://github.com/Siri-shh](https://github.com/Siri-shh)
+
+* **Atulya Ishan** — Backend Development, Aadhaar Integration
+  GitHub: [https://github.com/Binaryblaze64](https://github.com/Binaryblaze64)
+
+* **Kushal Raj** — Machine Learning Model Development
+  GitHub: [https://github.com/rkushell](https://github.com/rkushell)
+
+* **Aditya Jain** — Machine Learning Model Development
+  GitHub: [https://github.com/Aditya-Jain-01](https://github.com/Aditya-Jain-01)
+
+* **Srinidhi Aravind** — Frontend Development, Database Management
+  GitHub: [https://github.com/purple-glass-dev](https://github.com/purple-glass-dev)
+
+* **Trusha Mukhopadhyay** — Frontend Development 
+  GitHub: [https://github.com/tfortrusha](https://github.com/tfortrusha)
