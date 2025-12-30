@@ -1,16 +1,27 @@
-# 🚀 SIH_BSoD — PM Internship Allocation Portal
+# SIH_BSoD — PM Internship Allocation Portal
 
-> **Smart India Hackathon (SIH) Project**
-> A centralized, secure, and ML-driven platform for **fair, transparent, and auditable internship allocation** under the **Prime Minister Internship Scheme**.
+Smart India Hackathon (SIH) Project
+A centralized, secure, and ML-driven platform for fair, transparent, and auditable internship allocation under the Prime Minister Internship Scheme.
 <p align="center">
   <img width="327" height="345" alt="image" src="https://github.com/user-attachments/assets/0ac163ba-aee4-4c4d-8f6a-f622223912f5" />
 </p>
 
 ---
 
-## 📌 Table of Contents
+## Contributors
 
-1. Introduction & Vision
+* **[Sirish Saraf (Team Lead)](https://github.com/Siri-shh)** — Backend Development, Database Management
+* **[Atulya Ishan](https://github.com/Binaryblaze64)** — Backend Development, Aadhaar Integration
+* **[Kushal Raj](https://github.com/rkushell)** — Machine Learning Model Development
+* **[Aditya Jain](https://github.com/Aditya-Jain-01)** — Machine Learning Model Development
+* **[Srinidhi Aravind](https://github.com/purple-glass-dev)** — Frontend Development, Database Management
+* **[Trusha Mukhopadhyay](https://github.com/tfortrusha)** — Frontend Development (UI/UX)
+
+---
+
+## Table of Contents
+
+1. Introduction and Vision
 2. Problem Statement
 3. Solution Overview
 4. Core Features
@@ -22,20 +33,22 @@
 10. Environment Configuration
 11. Database Architecture
 12. API Overview (Exhaustive)
-13. Security, Authentication & Authorization
-14. Licensing & Legal Compliance
-15. Screenshots & Demo Guide
-16. Contributors
+13. Security, Authentication and Authorization
+14. Licensing and Legal Compliance
+15. Screenshots and Demo Guide
 
 ---
 
-## 1️⃣ Introduction & Vision
+
+
+
+## 1️ Introduction & Vision
 
 The **PM Internship Allocation Portal (SIH_BSoD)** is a full-stack platform built to manage the **end-to-end lifecycle of internship allocation** at a national scale. The system prioritizes **fairness, transparency, security, scalability, and auditability**, making it suitable for real-world government deployment.
 
 ---
 
-## 2️⃣ Problem Statement
+## 2️ Problem Statement
 
 Large-scale internship allocation programs face challenges such as:
 
@@ -49,7 +62,7 @@ SIH_BSoD addresses these issues using **algorithmic matching**, **machine learni
 
 ---
 
-## 3️⃣ Solution Overview
+## 3️ Solution Overview
 
 The solution is built as a **distributed, service-oriented system** consisting of:
 
@@ -61,9 +74,9 @@ The solution is built as a **distributed, service-oriented system** consisting o
 
 ---
 
-## 4️⃣ Core Features
+## 4️ Core Features
 
-### 🔐 Authentication & Security
+###  Authentication & Security
 
 * Role-Based Access Control (Student, Company, Admin)
 * Dual authentication system (Passport.js sessions + JWT tokens)
@@ -72,7 +85,7 @@ The solution is built as a **distributed, service-oriented system** consisting o
 * scrypt-based password hashing with unique salts
 * Profanity filtering with admin objection workflow
 
-### 🎓 Student Portal
+###  Student Portal
 
 * Profile management (GPA, skills, gender, category, rural/urban)
 * Aadhaar-based e-KYC using QR scanning + Twilio OTP
@@ -82,7 +95,7 @@ The solution is built as a **distributed, service-oriented system** consisting o
 * Career hub and insights
 * Multilingual AI chatbot (English, Hindi, Hinglish, Gujarati)
 
-### 🏢 Company Portal
+###  Company Portal
 
 * Company onboarding and profile setup
 * Internship creation and role management
@@ -90,7 +103,7 @@ The solution is built as a **distributed, service-oriented system** consisting o
 * View ML-matched candidates
 * Skill distribution analytics
 
-### 🏛️ Admin Portal
+###  Admin Portal
 
 * System-wide dashboards
 * CSV upload or DB sync
@@ -103,7 +116,7 @@ The solution is built as a **distributed, service-oriented system** consisting o
 
 ---
 
-## 5️⃣ System Architecture
+## 5️ System Architecture
 
 The system architecture defines **how each component interacts**, where **security boundaries exist**, and how **scalability and fault isolation** are achieved.
 
@@ -134,7 +147,7 @@ The system architecture defines **how each component interacts**, where **securi
 │                                  │
 │  ┌──────────────┐  ┌──────────┐  │
 │  │ PostgreSQL   │  │ Redis    │  │
-│  │ (Neon)       │  │          │  |
+│  │ (Neon)       │  │(Optional)│  │
 │  └──────────────┘  └──────────┘  │
 │                                  │
 └─────────────┬────────────────────┘
@@ -161,7 +174,7 @@ This architecture ensures:
 
 ---
 
-## 6️⃣ Allocation Engine (ML Backend)
+## 6️ Allocation Engine (ML Backend)
 
 * Algorithm: Modified **Gale–Shapley (Deferred Acceptance)**
 * ML-based scoring using academic history, skills, and geographic preferences
@@ -171,7 +184,7 @@ This architecture ensures:
 
 ---
 
-## 7️⃣ Technology Stack
+## 7️ Technology Stack
 
 | Layer      | Technologies                                                       |
 | ---------- | ------------------------------------------------------------------ |
@@ -186,57 +199,91 @@ This architecture ensures:
 
 ---
 
-## 8️⃣ Project Structure
+## 8. Project Structure
+
+The repository is organized as a multi-module system separating frontend, backend, database, and machine learning services.
 
 ```
-frontend_final/
-├── client/                 # React Frontend
+SIH_BSoD/
+│
+├── .env.example                 # Sample environment variables
+├── .gitignore
+├── LICENSE
+├── README.md
+│
+├── package.json                 # Root scripts & shared dependencies
+├── package-lock.json
+├── components.json
+├── drizzle.config.ts
+├── railway.toml                 # Deployment config (Railway)
+├── postcss.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+├── vite.config.ts
+│
+├── client/                      # Frontend (React + Vite)
+│   ├── index.html
+│   ├── public/
+│   │   ├── favicon.png
+│   │   └── images/
+│   │
 │   └── src/
-│       ├── components/     # 94 UI components
-│       │   ├── ChatbotWidget.tsx      # Multilingual AI chatbot
-│       │   ├── EKycSection.tsx        # Aadhaar + OTP verification
-│       │   ├── AuditPanel.tsx         # Admin audit logs
-│       │   ├── ModerationPanel.tsx    # Profanity objection review
-│       │   └── ui/                    # shadcn/ui primitives
-│       ├── pages/          # Application pages
-│       │   ├── LoginPage.tsx          # Student login with reCAPTCHA
-│       │   ├── RegisterPage.tsx       # Student registration
-│       │   ├── StudentPortal.tsx      # Student dashboard & preferences
-│       │   ├── CompanyPortal.tsx      # Company dashboard & candidates
-│       │   ├── AdminPortal.tsx        # Admin control center
-│       │   └── ObjectionPage.tsx      # Profanity objection form
-│       ├── lib/            # Utilities
-│       │   ├── AuthProvider.tsx       # Auth context & API calls
-│       │   └── profanityFilter.ts     # Client-side content filter
-│       └── hooks/          # Custom hooks
-│           └── useRecaptcha.ts        # reCAPTCHA integration
+│       ├── main.tsx             # Frontend entry point
+│       ├── App.tsx              # App root
+│       ├── index.css
+│       │
+│       ├── components/          # Reusable UI components
+│       ├── pages/               # Page-level routes (Student/Admin/Company)
+│       ├── hooks/               # Custom React hooks
+│       ├── lib/                 # API clients, helpers, auth utilities
+│       └── types/               # TypeScript definitions
 │
-├── server/                 # Express.js Backend
-│   ├── routes.ts           # API routes (~1340 lines)
-│   ├── auth.ts             # Passport + brute force protection
-│   ├── jwt.ts              # JWT token utilities
-│   ├── jwtRoutes.ts        # JWT auth endpoints
-│   ├── storage.ts          # Drizzle ORM database layer
-│   ├── profanityFilter.ts  # Server-side content filter
-│   ├── emailService.ts     # Nodemailer + objection workflow
-│   ├── chatContext.ts      # Portal-specific chatbot prompts
-│   ├── cache.ts            # Redis caching layer
-│   ├── db-router.ts        # Database sharding router
-│   └── db-replicas.ts      # Read replica configuration
+├── dbms/                        # Database layer (PostgreSQL)
+│   ├── applications.sql
+│   ├── candidates.sql
+│   ├── companies.sql
+│   ├── internships.sql
+│   ├── match_results.sql
+│   ├── migrations/              # Schema & partition migrations
+│   └── data/                    # Seed & sample datasets
 │
-├── shared/                 # Shared TypeScript types
-│   └── schema.ts           # Drizzle schema (single source of truth)
+├── ml-service/                  # Backend + ML Service (FastAPI)
+│   │
+│   ├── internship-ml-backend-with-better-AUC/
+│   │   ├── Dockerfile           # Backend container definition
+│   │   ├── docker-compose.yml   # Local / prod service orchestration
+│   │   ├── requirements.txt
+│   │   ├── README.md
+│   │
+│   │   ├── backend/
+│   │   │   └── app/
+│   │   │       ├── main.py      # 🚀 MAIN BACKEND SERVER (FastAPI)
+│   │   │       ├── models.py    # ML & data models
+│   │   │       │
+│   │   │       ├── routers/     # API endpoints
+│   │   │       │   ├── admin_api.py
+│   │   │       │   ├── student_api.py
+│   │   │       │   ├── dashboard_api.py
+│   │   │       │   └── upload_api.py
+│   │   │       │
+│   │   │       └── services/    # Core ML logic
+│   │   │           ├── allocate_service.py
+│   │   │           ├── model_service.py
+│   │   │           ├── predict_service.py
+│   │   │           └── train_service.py
+│   │
+│   │   ├── data/                # ML datasets
+│   │   └── json_outputs/        # Allocation & fairness reports
 │
-├── dbms/                   # Database management
-│   ├── data/               # CSV data files
-│   └── *.sql, *.ts         # Migration & utility scripts
-│
-└── docs/                   # Documentation
-```
+└── docs/                        # Documentation & references
+    ├── question_statement_and_approach.md
+    ├── ml_model_variables.txt
+    └── datasets/
+
 
 ---
-
-## 9️⃣ Getting Started
+```
+## 9️ Getting Started
 
 ### Install Dependencies
 
@@ -261,31 +308,56 @@ npx tsx script/seed.ts
 
 ---
 
-## 🔟 Environment Configuration
+## 10 Environment Configuration
 
-> ⚠️ Never commit `.env` files to version control.
 
-```env
-PORT=5000
-JWT_SECRET=your-jwt-secret
-SESSION_SECRET=your-session-secret
-DATABASE_URL=postgresql://user:password@host:5432/database
-ML_BASE_URL=https://internship-ml-backend-production.up.railway.app
-VITE_RECAPTCHA_SITE_KEY=your-recaptcha-site-key
-TWILIO_ACCOUNT_SID=your-twilio-sid
-TWILIO_AUTH_TOKEN=your-twilio-token
-TWILIO_FROM=+1234567890
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-REDIS_URL=redis://localhost:6379
-GROQ_API_KEY=your-groq-api-key
-```
+
+## Environment Variables
+
+### Server Configuration
+- **PORT**: 5000  
+  Port on which the backend server runs.
+
+### Authentication and Security
+- **JWT_SECRET**: your-jwt-secret  
+  Secret key used to sign JWT access tokens.
+
+- **SESSION_SECRET**: your-session-secret  
+  Secret used for session-based authentication (Passport.js).
+
+### Database
+- **DATABASE_URL**: postgresql://user:password@host:5432/database  
+  PostgreSQL connection string (Neon Serverless).
+
+### Machine Learning Backend
+- **ML_BASE_URL**: https://internship-ml-backend-production.up.railway.app  
+  Endpoint for the external ML allocation service.
+
+### Bot Protection
+- **VITE_RECAPTCHA_SITE_KEY**: your-recaptcha-site-key  
+  Google reCAPTCHA v2 site key.
+
+### SMS / OTP Service (Twilio)
+- **TWILIO_ACCOUNT_SID**: your-twilio-sid  
+- **TWILIO_AUTH_TOKEN**: your-twilio-token  
+- **TWILIO_FROM**: +1234567890  
+
+### Email Service
+- **SMTP_HOST**: smtp.gmail.com  
+- **SMTP_PORT**: 587  
+- **SMTP_USER**: your-email@gmail.com  
+- **SMTP_PASS**: your-app-password  
+
+### Caching (Optional)
+- **REDIS_URL**: redis://localhost:6379  
+
+### AI Chatbot
+- **GROQ_API_KEY**: your-groq-api-key  
+
 
 ---
 
-## 1️⃣1️⃣ Database Architecture
+## 1️1️ Database Architecture
 
 * PostgreSQL with schema-level sharding
 * Tier-based state partitioning
@@ -293,7 +365,7 @@ GROQ_API_KEY=your-groq-api-key
 
 ---
 
-## 1️⃣2️⃣ API Overview (Exhaustive)
+## 1️2️ API Overview (Exhaustive)
 
 All application-level APIs are grouped below. Internal middleware utilities are excluded.
 
@@ -334,7 +406,7 @@ All application-level APIs are grouped below. Internal middleware utilities are 
 
 ---
 
-## 1️⃣3️⃣ Security, Authentication & Authorization
+## 1️3️ Security, Authentication & Authorization
 
 * Role-based access control at route level
 * Admin-only privileged endpoints
@@ -344,15 +416,15 @@ All application-level APIs are grouped below. Internal middleware utilities are 
 
 ---
 
-## 1️⃣4️⃣ Licensing & Legal Compliance
+## 1️4️ Licensing & Legal Compliance
 
 This project is licensed under the **MIT License**.
 
 ---
 
-## 1️⃣5️⃣ Screenshots & Demo Guide(Yet to be added)
+## 1️5️ Screenshots & Demo Guide(Yet to be added)
 
-
+Recommended screenshots:
 
 1. Landing page
 2. Student portal
@@ -361,23 +433,3 @@ This project is licensed under the **MIT License**.
 5. Allocation results & fairness metrics
 
 ---
-
-## 1️⃣6️⃣ Contributors
-
-* **Sirish Saraf (Team Lead)** — Backend Development, Database Management
-  GitHub: [https://github.com/Siri-shh](https://github.com/Siri-shh)
-
-* **Atulya Ishan** — Backend Development, Aadhaar Integration
-  GitHub: [https://github.com/Binaryblaze64](https://github.com/Binaryblaze64)
-
-* **Kushal Raj** — Machine Learning Model Development
-  GitHub: [https://github.com/rkushell](https://github.com/rkushell)
-
-* **Aditya Jain** — Machine Learning Model Development
-  GitHub: [https://github.com/Aditya-Jain-01](https://github.com/Aditya-Jain-01)
-
-* **Srinidhi Aravind** — Frontend Development, Database Management
-  GitHub: [https://github.com/purple-glass-dev](https://github.com/purple-glass-dev)
-
-* **Trusha Mukhopadhyay** — Frontend Development 
-  GitHub: [https://github.com/tfortrusha](https://github.com/tfortrusha)
