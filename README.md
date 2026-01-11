@@ -13,7 +13,7 @@ A centralized, secure, and ML-driven platform for fair, transparent, and auditab
 * **[Sirish Saraf (Team Lead)](https://github.com/Siri-shh)** — Backend Development, Database Management
 * **[Atulya Ishan](https://github.com/Binaryblaze64)** — Backend Development, Aadhaar Integration
 * **[Kushal Raj](https://github.com/rkushell)** — Machine Learning Model Development
-* **[Aditya Jain](https://github.com/Aditya-Jain-01)** — Machine Learning Model Development
+* **[Aditya Jain](https://github.com/Aditya-Jain-01)** — Machine Learning Model Development, JWT-based Authentication with RBAC
 * **[Srinidhi Aravind](https://github.com/purple-glass-dev)** — Frontend Development, Database Management
 * **[Trusha Mukhopadhyay](https://github.com/tfortrusha)** — Frontend Development (UI/UX)
 
