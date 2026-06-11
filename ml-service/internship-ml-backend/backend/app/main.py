@@ -18,6 +18,10 @@ app.add_middleware(
 app.include_router(student_router, prefix="/student", tags=["Student"])
 app.include_router(admin_router, prefix="/admin", tags=["Admin"])
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"message": "ML Backend API is running"}
+
+@app.api_route("/health", methods=["GET", "HEAD"])
+def health():
+    return {"status": "ok", "service": "pm-internship-ml"}
