@@ -1,3 +1,4 @@
+# Render Blueprint — connect to https://github.com/Siri-shh/PM-Internship-Scheme
 services:
   # ─────────────────────────────────────────────────────────────
   # 1. Python FastAPI ML Service (Docker)
