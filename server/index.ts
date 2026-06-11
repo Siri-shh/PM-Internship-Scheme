@@ -113,7 +113,7 @@ app.use((req, res, next) => {
    */
   const defaultPort = parseInt(process.env.PORT || "5000", 10);
   const hostEnv = (process.env.HOST || "").trim();
-  const defaultHost = hostEnv || "127.0.0.1";
+  const defaultHost = hostEnv || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
   const port = Number.isFinite(defaultPort) ? defaultPort : 5000;
 
   // Build listen options conditionally
