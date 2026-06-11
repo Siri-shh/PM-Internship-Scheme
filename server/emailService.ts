@@ -1,6 +1,7 @@
 /**
  * Email Service - Handles all email notifications
  * Uses Nodemailer with Gmail SMTP
+ * Objection requests and whitelist now stored in PostgreSQL (persistent across restarts)
  */
 
 import nodemailer from 'nodemailer';
@@ -20,17 +21,23 @@ const SMTP_CONFIG = {
 const FROM_EMAIL = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@example.com';
 const APP_URL = process.env.APP_URL || 'http://localhost:5000';
 
-// Store objection tokens (in production, use database)
+// Lazy import storage to avoid circular dependency
+function getStorage() {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { storage } = require('./storage');
+    return storage;
+}
+
+// ObjectionRequest type (mirrors DB row shape for compatibility)
 interface ObjectionRequest {
     token: string;
     email: string;
     name: string;
     detectedWord: string;
-    createdAt: Date;
+    createdAt: Date | null;
     status: 'pending' | 'approved' | 'rejected';
+    reason?: string | null;
 }
-
-export const objectionRequests: Map<string, ObjectionRequest> = new Map();
 
 // Create transporter
 let transporter: nodemailer.Transporter | null = null;
@@ -131,24 +138,15 @@ export async function sendRegistrationConfirmation(
 }
 
 /**
- * Generate objection token and store request
+ * Generate objection token and store request in DB
  */
-export function createObjectionRequest(
+export async function createObjectionRequest(
     email: string,
     name: string,
     detectedWord: string
-): string {
+): Promise<string> {
     const token = randomBytes(32).toString('hex');
-
-    objectionRequests.set(token, {
-        token,
-        email,
-        name,
-        detectedWord,
-        createdAt: new Date(),
-        status: 'pending',
-    });
-
+    await getStorage().createObjectionRequest(token, email, name, detectedWord);
     return token;
 }
 
@@ -160,8 +158,8 @@ export async function sendExplicitWordNotification(
     userName: string,
     detectedWord: string
 ): Promise<{ sent: boolean; objectionToken?: string }> {
-    // Create objection request and get token
-    const objectionToken = createObjectionRequest(toEmail, userName, detectedWord);
+    // Create objection request in DB and get token
+    const objectionToken = await createObjectionRequest(toEmail, userName, detectedWord);
     const objectionUrl = `${APP_URL}/objection/${objectionToken}`;
 
     if (!transporter) {
@@ -237,31 +235,26 @@ export async function sendExplicitWordNotification(
 }
 
 /**
- * Get objection request by token
+ * Get objection request by token (from DB)
  */
-export function getObjectionRequest(token: string): ObjectionRequest | undefined {
-    return objectionRequests.get(token);
+export async function getObjectionRequest(token: string): Promise<ObjectionRequest | null> {
+    return getStorage().getObjectionByToken(token);
 }
 
-// Whitelist for approved names/emails (in production, use database)
-export const approvedWhitelist: Set<string> = new Set();
+// Whitelist functions now use DB via storage
 
 /**
- * Check if name or email is whitelisted
+ * Check if name or email is whitelisted (from DB)
  */
-export function isWhitelisted(name: string, email: string): boolean {
-    const normalizedName = name.toLowerCase().trim();
-    const normalizedEmail = email.toLowerCase().trim();
-    return approvedWhitelist.has(normalizedName) || approvedWhitelist.has(normalizedEmail);
+export async function isWhitelisted(name: string, email: string): Promise<boolean> {
+    return getStorage().isWhitelisted(name, email);
 }
 
 /**
- * Add name/email to whitelist
+ * Add name/email to whitelist (in DB)
  */
-export function addToWhitelist(name: string, email: string): void {
-    approvedWhitelist.add(name.toLowerCase().trim());
-    approvedWhitelist.add(email.toLowerCase().trim());
-    console.log(`[Whitelist] Added: "${name}", "${email}"`);
+export async function addToWhitelist(name: string, email: string): Promise<void> {
+    return getStorage().addToWhitelist(name, email);
 }
 
 /**
@@ -416,26 +409,21 @@ export async function sendRejectionEmail(
 
 /**
  * Update objection status and handle whitelist/notifications (for admin portal)
+ * Now fully async using DB storage
  */
 export async function updateObjectionStatus(
     token: string,
     status: 'approved' | 'rejected'
 ): Promise<{ success: boolean; emailSent: boolean }> {
-    const request = objectionRequests.get(token);
+    const request = await getStorage().updateObjectionStatus(token, status);
     if (!request) return { success: false, emailSent: false };
-
-    request.status = status;
-    objectionRequests.set(token, request);
 
     let emailSent = false;
 
     if (status === 'approved') {
-        // Add to whitelist so user can register
-        addToWhitelist(request.name, request.email);
-        // Send approval email
+        await addToWhitelist(request.name, request.email);
         emailSent = await sendApprovalEmail(request.email, request.name);
     } else if (status === 'rejected') {
-        // Send rejection email
         emailSent = await sendRejectionEmail(request.email, request.name);
     }
 
@@ -443,11 +431,9 @@ export async function updateObjectionStatus(
 }
 
 /**
- * Get all pending objection requests (for admin portal)
+ * Get all pending objection requests (for admin portal) from DB
  */
-export function getPendingObjections(): ObjectionRequest[] {
-    return Array.from(objectionRequests.values())
-        .filter(req => req.status === 'pending')
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+export async function getPendingObjections(): Promise<ObjectionRequest[]> {
+    return getStorage().getPendingObjections();
 }
 

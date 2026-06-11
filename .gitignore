@@ -5,3 +5,16 @@ server/public
 vite.config.ts.*
 *.tar.gz
 .env
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+ml-service/*/mlenv/
+ml-service/*/mlenv
+ml-service/*/.venv/
+ml-service/*/venv/
+
+# Large generated ML files (not needed in repo)
+ml-service/*/data/past_pairs_gen.csv
+ml-service/*/server.log

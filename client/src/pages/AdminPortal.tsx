@@ -1187,8 +1187,10 @@ export default function AdminPortal() {
             await trainModel();
             toast({ title: "✓ Model training completed" });
 
-            setAllocationStep("Running allocation algorithm...");
-            await allocateInternships();
+            setAllocationStep("Starting allocation algorithm...");
+            await allocateInternships((status, elapsed) => {
+                setAllocationStep(`${status} (${elapsed}s elapsed)`);
+            });
             toast({ title: "✓ Allocation completed!" });
 
             setAllocationStep("Loading results...");
@@ -1227,7 +1229,6 @@ export default function AdminPortal() {
             setAllocationStep("Syncing data from database and uploading to ML...");
             toast({ title: "Syncing...", description: "Uploading database data to ML backend" });
 
-            // Use the /api/admin/ml/sync endpoint which maps columns correctly
             const syncResponse = await fetch("/api/admin/ml/sync", {
                 method: "POST",
                 credentials: "include",
@@ -1241,8 +1242,10 @@ export default function AdminPortal() {
             setUploadProgress({ students: true, internships: true });
             toast({ title: "✓ Data synced and model trained!" });
 
-            setAllocationStep("Running allocation algorithm...");
-            await allocateInternships();
+            setAllocationStep("Starting allocation algorithm...");
+            await allocateInternships((status, elapsed) => {
+                setAllocationStep(`${status} (${elapsed}s elapsed)`);
+            });
             toast({ title: "✓ Allocation completed!" });
 
             setAllocationStep("Loading results...");

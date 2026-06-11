@@ -1,0 +1,115 @@
+{
+  "total_placed": 1448,
+  "pct_first_choice": 0.8536,
+  "pct_top3": 0.9841,
+  "pct_top5": 0.9924,
+  "pct_outside_preferences": 0.0062,
+  "counts": {
+    "first_choice": 1236,
+    "top3": 1425,
+    "top5": 1437,
+    "outside": 9
+  },
+  "example_table": [
+    {
+      "student_id": "S00813",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S01583",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00570",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S02102",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00039",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00309",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S02989",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00529",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S03260",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S03066",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S03897",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S03463",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00867",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S02346",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S00879",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S03635",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S02421",
+      "internship_id": "I001",
+      "pref_rank": 1
+    },
+    {
+      "student_id": "S01482",
+      "internship_id": "I001",
+      "pref_rank": 2
+    },
+    {
+      "student_id": "S05458",
+      "internship_id": "I001",
+      "pref_rank": 2
+    },
+    {
+      "student_id": "S01209",
+      "internship_id": "I002",
+      "pref_rank": 1
+    }
+  ]
+}

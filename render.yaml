@@ -1,0 +1,56 @@
+services:
+  # ─────────────────────────────────────────────────────────────
+  # 1. Python FastAPI ML Service (Docker)
+  # ─────────────────────────────────────────────────────────────
+  - type: web
+    name: pm-internship-ml
+    runtime: docker
+    dockerfilePath: ml-service/internship-ml-backend/Dockerfile
+    dockerContext: ml-service/internship-ml-backend
+    plan: free
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /
+    # Render free: sleeps after 15 min inactivity → use UptimeRobot to ping / every 5 min
+
+  # ─────────────────────────────────────────────────────────────
+  # 2. Node.js + React App (Express serves built Vite frontend)
+  # ─────────────────────────────────────────────────────────────
+  - type: web
+    name: pm-internship-portal
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.cjs
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # All secrets below must be set manually in the Render dashboard
+      - key: DATABASE_URL
+        sync: false        # Set in Render dashboard → Neon connection string
+      - key: JWT_SECRET
+        sync: false        # 64-char random string
+      - key: SESSION_SECRET
+        sync: false        # 64-char random string
+      - key: ML_BASE_URL
+        sync: false        # https://pm-internship-ml.onrender.com (after ML deploys)
+      - key: VITE_RECAPTCHA_SITE_KEY
+        sync: false        # From Google reCAPTCHA console — needed at BUILD TIME
+      - key: GROQ_API_KEY
+        sync: false        # From https://console.groq.com
+      - key: SMTP_USER
+        sync: false        # Gmail address
+      - key: SMTP_PASS
+        sync: false        # Gmail App Password (not account password)
+      - key: SMTP_FROM
+        sync: false        # Same as SMTP_USER
+      - key: APP_URL
+        sync: false        # https://pm-internship-portal.onrender.com
+      - key: TWILIO_ACCOUNT_SID
+        sync: false        # Optional — from Twilio console
+      - key: TWILIO_AUTH_TOKEN
+        sync: false        # Optional
+      - key: TWILIO_FROM
+        sync: false        # Optional — Twilio phone number

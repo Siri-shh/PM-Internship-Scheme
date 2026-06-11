@@ -1,0 +1,8 @@
+sector,placed,reservation,gender,rural_placed,placement_rate
+Automobile,150,"{'GEN': 73, 'OBC': 42, 'SC': 24, 'ST': 11}","{'M': 83, 'F': 67}",67,0.025
+Electronics,175,"{'GEN': 76, 'OBC': 44, 'SC': 31, 'ST': 24}","{'M': 88, 'F': 84, 'O': 3}",85,0.0292
+Finance,232,"{'GEN': 81, 'OBC': 81, 'SC': 43, 'ST': 27}","{'M': 125, 'F': 105, 'O': 2}",120,0.0387
+Healthcare,184,"{'GEN': 68, 'OBC': 59, 'SC': 33, 'ST': 24}","{'F': 98, 'M': 84, 'O': 2}",100,0.0307
+IT Services,387,"{'OBC': 137, 'GEN': 124, 'SC': 70, 'ST': 56}","{'F': 191, 'M': 191, 'O': 5}",226,0.0645
+Marketing,149,"{'GEN': 69, 'OBC': 43, 'ST': 21, 'SC': 16}","{'F': 79, 'M': 64, 'O': 6}",73,0.0248
+Mechanical,171,"{'GEN': 76, 'OBC': 55, 'SC': 24, 'ST': 16}","{'F': 94, 'M': 75, 'O': 2}",92,0.0285

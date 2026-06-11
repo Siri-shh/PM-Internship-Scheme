@@ -104,20 +104,57 @@ export async function trainModel(): Promise<any> {
 }
 
 /**
- * Run the allocation algorithm
+ * Run the allocation algorithm (async job pattern)
+ * Returns immediately with jobId, then polls until complete
  */
-export async function allocateInternships(): Promise<any> {
-    const response = await fetch(`${ML_API_BASE}/allocate`, {
+export async function allocateInternships(
+  onProgress?: (status: string, elapsedSec: number) => void
+): Promise<any> {
+    // Start the job
+    const startRes = await fetch(`${ML_API_BASE}/allocate`, {
         method: "POST",
         credentials: "include",
     });
 
-    if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Allocation failed: ${error}`);
+    if (!startRes.ok) {
+        const error = await startRes.text();
+        throw new Error(`Failed to start allocation: ${error}`);
     }
 
-    return response.json();
+    const { jobId } = await startRes.json();
+    if (!jobId) throw new Error("No job ID returned from allocation start");
+
+    // Poll until done or failed (max 130 seconds)
+    const POLL_INTERVAL_MS = 3000;
+    const MAX_POLLS = 45; // 45 * 3s = 135s max
+
+    for (let i = 0; i < MAX_POLLS; i++) {
+        await new Promise(r => setTimeout(r, POLL_INTERVAL_MS));
+
+        const pollRes = await fetch(`${ML_API_BASE}/allocation-status/${jobId}`, {
+            credentials: "include",
+        });
+
+        if (!pollRes.ok) {
+            throw new Error("Failed to poll allocation status");
+        }
+
+        const job = await pollRes.json();
+        const elapsedSec = Math.round((job.elapsedMs || 0) / 1000);
+
+        if (job.status === "done") {
+            onProgress?.("Allocation complete!", elapsedSec);
+            return job.result;
+        }
+
+        if (job.status === "failed") {
+            throw new Error(`Allocation failed: ${job.error}`);
+        }
+
+        onProgress?.(`Running allocation... (${elapsedSec}s)`, elapsedSec);
+    }
+
+    throw new Error("Allocation timed out after 135 seconds. Please check the dashboard.");
 }
 
 /**

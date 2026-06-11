@@ -1,11 +1,13 @@
 import {
   users, candidates, companies, internships, allocations,
   auditSessions, auditUserEvents, auditAllocationRuns,
+  otpStore, objectionRequestsTable, contentWhitelist,
   type User, type InsertUser, type Candidate, type Company, type Internship,
-  type AuditSession, type AuditUserEvent, type AuditAllocationRun
+  type AuditSession, type AuditUserEvent, type AuditAllocationRun,
+  type ObjectionRequestRow
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, or, lt } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -305,6 +307,105 @@ export class DatabaseStorage implements IStorage {
       totalAllocationRuns: runStats?.count || 0,
       lastAllocationRun: lastRun || null,
     };
+  }
+
+  // ============================================================
+  // OTP STORE — persistent, replaces in-memory Map
+  // ============================================================
+
+  async saveOtp(aadhaarNumber: string, otp: string, phone: string, ttlMinutes = 5): Promise<void> {
+    const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+    await db.insert(otpStore)
+      .values({ aadhaarNumber, otp, phone, expiresAt })
+      .onConflictDoUpdate({
+        target: otpStore.aadhaarNumber,
+        set: { otp, phone, expiresAt, createdAt: new Date() },
+      });
+  }
+
+  async getOtp(aadhaarNumber: string): Promise<{ otp: string; phone: string; expiresAt: Date } | null> {
+    const [row] = await db.select().from(otpStore).where(eq(otpStore.aadhaarNumber, aadhaarNumber));
+    if (!row) return null;
+    if (row.expiresAt < new Date()) {
+      await db.delete(otpStore).where(eq(otpStore.aadhaarNumber, aadhaarNumber));
+      return null;
+    }
+    return { otp: row.otp, phone: row.phone, expiresAt: row.expiresAt };
+  }
+
+  async deleteOtp(aadhaarNumber: string): Promise<void> {
+    await db.delete(otpStore).where(eq(otpStore.aadhaarNumber, aadhaarNumber));
+  }
+
+  // ============================================================
+  // OBJECTION REQUESTS — persistent, replaces in-memory Map
+  // ============================================================
+
+  async createObjectionRequest(token: string, email: string, name: string, detectedWord: string): Promise<void> {
+    await db.insert(objectionRequestsTable).values({ token, email, name, detectedWord, status: 'pending' });
+  }
+
+  async getObjectionByToken(token: string): Promise<ObjectionRequestRow | null> {
+    const [row] = await db.select().from(objectionRequestsTable)
+      .where(eq(objectionRequestsTable.token, token));
+    return row || null;
+  }
+
+  async updateObjectionReason(token: string, reason: string): Promise<void> {
+    await db.update(objectionRequestsTable)
+      .set({ reason })
+      .where(eq(objectionRequestsTable.token, token));
+  }
+
+  async updateObjectionStatus(token: string, status: 'approved' | 'rejected'): Promise<ObjectionRequestRow | null> {
+    const [updated] = await db.update(objectionRequestsTable)
+      .set({ status })
+      .where(eq(objectionRequestsTable.token, token))
+      .returning();
+    return updated || null;
+  }
+
+  async getPendingObjections(): Promise<ObjectionRequestRow[]> {
+    return db.select().from(objectionRequestsTable)
+      .where(eq(objectionRequestsTable.status, 'pending'))
+      .orderBy(desc(objectionRequestsTable.createdAt));
+  }
+
+  async getAllObjections(): Promise<ObjectionRequestRow[]> {
+    return db.select().from(objectionRequestsTable)
+      .orderBy(desc(objectionRequestsTable.createdAt));
+  }
+
+  // ============================================================
+  // CONTENT WHITELIST — persistent, replaces in-memory Set
+  // ============================================================
+
+  async addToWhitelist(name: string, email: string): Promise<void> {
+    const values = [
+      { value: name.toLowerCase().trim() },
+      { value: email.toLowerCase().trim() },
+    ];
+    for (const v of values) {
+      await db.insert(contentWhitelist)
+        .values(v)
+        .onConflictDoNothing();
+    }
+    console.log(`[Whitelist] Added: "${name}", "${email}"`);
+  }
+
+  async isWhitelisted(name: string, email: string): Promise<boolean> {
+    const normalizedName = name.toLowerCase().trim();
+    const normalizedEmail = email.toLowerCase().trim();
+    const [row] = await db.select({ id: contentWhitelist.id })
+      .from(contentWhitelist)
+      .where(
+        or(
+          eq(contentWhitelist.value, normalizedName),
+          eq(contentWhitelist.value, normalizedEmail)
+        )
+      )
+      .limit(1);
+    return !!row;
   }
 }
 

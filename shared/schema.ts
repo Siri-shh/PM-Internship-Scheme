@@ -132,3 +132,42 @@ export type AuditUserEvent = typeof auditUserEvents.$inferSelect;
 export type InsertAuditUserEvent = typeof auditUserEvents.$inferInsert;
 export type AuditAllocationRun = typeof auditAllocationRuns.$inferSelect;
 export type InsertAuditAllocationRun = typeof auditAllocationRuns.$inferInsert;
+
+// ============================================
+// PERSISTENCE TABLES (replacing in-memory state)
+// ============================================
+
+// OTP Store — replaces in-memory Map in routes.ts
+// Each Aadhaar number can have one active OTP at a time
+export const otpStore = pgTable("otp_store", {
+  aadhaarNumber: text("aadhaar_number").primaryKey(),
+  otp: text("otp").notNull(),
+  phone: text("phone").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Objection Requests — replaces in-memory Map in emailService.ts
+export const objectionRequestsTable = pgTable("objection_requests", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull().unique(),
+  email: text("email").notNull(),
+  name: text("name").notNull(),
+  detectedWord: text("detected_word").notNull(),
+  reason: text("reason"),  // submitted by user later
+  status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Content Whitelist — replaces in-memory Set in emailService.ts
+export const contentWhitelist = pgTable("content_whitelist", {
+  id: serial("id").primaryKey(),
+  value: text("value").notNull().unique(), // lowercased name or email
+  addedAt: timestamp("added_at").defaultNow(),
+});
+
+// Persistence Types
+export type OtpStore = typeof otpStore.$inferSelect;
+export type ObjectionRequestRow = typeof objectionRequestsTable.$inferSelect;
+export type ContentWhitelistRow = typeof contentWhitelist.$inferSelect;
+

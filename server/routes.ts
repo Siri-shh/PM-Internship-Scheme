@@ -11,11 +11,30 @@ import {
   getObjectionRequest,
   updateObjectionStatus,
   getPendingObjections,
-  objectionRequests
+  isWhitelisted
 } from "./emailService";
 
-
 const ML_BASE_URL = process.env.ML_BASE_URL || "https://internship-ml-backend-production.up.railway.app";
+const ML_TIMEOUT_MS = 120_000; // 120 seconds for long ML operations
+
+// In-memory allocation job store (short-lived — acceptable to reset on restart)
+const allocationJobs: Map<string, {
+  status: 'running' | 'done' | 'failed';
+  result?: any;
+  error?: string;
+  startedAt: number;
+}> = new Map();
+
+/** Helper: fetch with AbortController timeout */
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = ML_TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function jsonToCsv(items: any[], fields: { key: string; label: string }[]): string {
   const header = fields.map(f => f.label).join(",");
@@ -48,11 +67,16 @@ export async function registerRoutes(
   // Initialize email service
   initializeEmailService();
 
-  // ============== Objection API Routes ==============
+  // ============== Health Check (for UptimeRobot keep-alive) ==============
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString(), service: "pm-internship-portal" });
+  });
+
+  // ============== Objection API Routes (all DB-backed now) ==============
   // Get objection details by token
-  app.get("/api/objection/:token", (req, res) => {
+  app.get("/api/objection/:token", async (req, res) => {
     const { token } = req.params;
-    const objection = getObjectionRequest(token);
+    const objection = await getObjectionRequest(token);
 
     if (!objection) {
       return res.status(404).json({ error: "Objection not found or expired" });
@@ -62,11 +86,11 @@ export async function registerRoutes(
   });
 
   // Submit objection with reason
-  app.post("/api/objection/:token/submit", (req, res) => {
+  app.post("/api/objection/:token/submit", async (req, res) => {
     const { token } = req.params;
     const { reason } = req.body;
 
-    const objection = getObjectionRequest(token);
+    const objection = await getObjectionRequest(token);
     if (!objection) {
       return res.status(404).json({ error: "Objection not found or expired" });
     }
@@ -75,21 +99,20 @@ export async function registerRoutes(
       return res.status(400).json({ error: "Objection already processed" });
     }
 
-    // Store the reason (extend the objection request)
-    (objection as any).reason = reason;
-    objectionRequests.set(token, objection);
+    // Store the reason in DB
+    await storage.updateObjectionReason(token, reason);
 
     console.log(`[Objection] Submitted for review: ${token.substring(0, 8)}... by ${objection.email}`);
     res.json({ success: true, message: "Objection submitted for review" });
   });
 
   // Admin: Get pending objections
-  app.get("/api/admin/objections", (req, res) => {
+  app.get("/api/admin/objections", async (req, res) => {
     if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
     const user = req.user as User;
     if (user.role !== "admin") return res.status(403).send("Admin access required");
 
-    const pending = getPendingObjections();
+    const pending = await getPendingObjections();
     res.json(pending);
   });
 
@@ -582,15 +605,10 @@ export async function registerRoutes(
 
   // Admin / ML Routes
   app.post("/api/admin/ml/sync", async (req, res) => {
-    // if (!req.isAuthenticated() || req.user?.role !== "admin") return res.status(401).send("Unauthorized");
-
     try {
-      // 1. Fetch Data
       const candidates = await storage.getAllCandidates();
       const internships = await storage.getAllInternships();
 
-      // 2. Convert to CSV
-      // Essential Columns based on CSV inspection
       const studentFields = [
         { key: "studentId", label: "student_id" },
         { key: "gpa", label: "gpa" },
@@ -618,32 +636,23 @@ export async function registerRoutes(
       const studentsCsv = jsonToCsv(candidates, studentFields);
       const internshipsCsv = jsonToCsv(internships, internshipFields);
 
-      // 3. Upload to ML Backend
-      // Construct FormData
       const studentForm = new FormData();
       studentForm.append("file", new Blob([studentsCsv]), "students.csv");
 
       const internshipForm = new FormData();
       internshipForm.append("file", new Blob([internshipsCsv]), "internships.csv");
 
-      console.log("Uploading students...");
-      const sRes = await fetch(`${ML_BASE_URL}/admin/upload/students`, {
-        method: "POST",
-        body: studentForm
-      });
+      console.log("[Sync] Uploading students to ML...");
+      const sRes = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/students`, { method: "POST", body: studentForm });
       if (!sRes.ok) throw new Error(`Student upload failed: ${sRes.statusText}`);
 
-      console.log("Uploading internships...");
-      const iRes = await fetch(`${ML_BASE_URL}/admin/upload/internships`, {
-        method: "POST",
-        body: internshipForm
-      });
+      console.log("[Sync] Uploading internships to ML...");
+      const iRes = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/internships`, { method: "POST", body: internshipForm });
       if (!iRes.ok) throw new Error(`Internship upload failed: ${iRes.statusText}`);
 
-      // 4. Trigger Training (Optional?)
-      console.log("Triggering training...");
-      const tRes = await fetch(`${ML_BASE_URL}/admin/train`, { method: "POST" });
-      if (!tRes.ok) console.warn("Training warning:", tRes.statusText);
+      console.log("[Sync] Triggering training...");
+      const tRes = await fetchWithTimeout(`${ML_BASE_URL}/admin/train`, { method: "POST" });
+      if (!tRes.ok) console.warn("[Sync] Training warning:", tRes.statusText);
 
       res.json({ message: "Sync and Upload Successful" });
     } catch (err: any) {
@@ -652,30 +661,40 @@ export async function registerRoutes(
     }
   });
 
+  // Async allocation (ml/allocate alias) — returns jobId immediately
   app.post("/api/admin/ml/allocate", async (req, res) => {
-    try {
-      const response = await fetch(`${ML_BASE_URL}/admin/allocate`, { method: "POST" });
-      if (!response.ok) throw new Error(`Allocation failed: ${response.statusText}`);
-      const result = await response.json();
-      res.json(result);
-    } catch (err: any) {
-      res.status(500).json({ message: err.message });
-    }
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    allocationJobs.set(jobId, { status: 'running', startedAt: Date.now() });
+    res.status(202).json({ jobId, status: 'running', message: 'Allocation started. Poll /api/admin/allocation-status/:jobId for progress.' });
+
+    // Run in background — fire and forget
+    (async () => {
+      try {
+        console.log(`[Allocation] Job ${jobId} started`);
+        const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/allocate`, { method: "POST" });
+        if (!response.ok) throw new Error(`Allocation failed: ${response.statusText}`);
+        const result = await response.json();
+        allocationJobs.set(jobId, { status: 'done', result, startedAt: allocationJobs.get(jobId)!.startedAt });
+        console.log(`[Allocation] Job ${jobId} done`);
+      } catch (err: any) {
+        allocationJobs.set(jobId, { status: 'failed', error: err.message, startedAt: allocationJobs.get(jobId)!.startedAt });
+        console.error(`[Allocation] Job ${jobId} failed:`, err.message);
+      }
+    })();
   });
   // ==========================================================================
   // ML API PROXY ROUTES (to avoid CORS issues)
   // ==========================================================================
 
-  // Dashboard - Get ML dashboard data
+  // Dashboard - uses timeout
   app.get("/api/admin/dashboard", async (req, res) => {
     console.log("Proxying: GET /admin/dashboard");
     try {
-      const response = await fetch(`${ML_BASE_URL}/admin/dashboard`);
+      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/dashboard`, {}, 30_000);
       if (!response.ok) {
         throw new Error(`ML API error: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      console.log("Dashboard data received:", JSON.stringify(data).slice(0, 200));
       res.json(data);
     } catch (err: any) {
       console.error("Dashboard proxy error:", err);
@@ -683,16 +702,14 @@ export async function registerRoutes(
     }
   });
 
-  // Upload Students CSV
+  // Upload Students CSV (with timeout)
   app.post("/api/admin/upload/students", async (req, res) => {
     console.log("Proxying: POST /admin/upload/students");
     try {
       const contentType = req.headers["content-type"] || "";
-
-      // Convert Buffer to Uint8Array for fetch body
       const bodyData = req.rawBody ? new Uint8Array(req.rawBody as Buffer) : undefined;
 
-      const response = await fetch(`${ML_BASE_URL}/admin/upload/students`, {
+      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/students`, {
         method: "POST",
         headers: { "Content-Type": contentType },
         body: bodyData,
@@ -704,7 +721,6 @@ export async function registerRoutes(
       }
 
       const data = await response.json();
-      console.log("Students upload response:", data);
       res.json(data);
     } catch (err: any) {
       console.error("Students upload error:", err);
@@ -712,16 +728,14 @@ export async function registerRoutes(
     }
   });
 
-  // Upload Internships CSV
+  // Upload Internships CSV (with timeout)
   app.post("/api/admin/upload/internships", async (req, res) => {
     console.log("Proxying: POST /admin/upload/internships");
     try {
       const contentType = req.headers["content-type"] || "";
-
-      // Convert Buffer to Uint8Array for fetch body
       const bodyData = req.rawBody ? new Uint8Array(req.rawBody as Buffer) : undefined;
 
-      const response = await fetch(`${ML_BASE_URL}/admin/upload/internships`, {
+      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/internships`, {
         method: "POST",
         headers: { "Content-Type": contentType },
         body: bodyData,
@@ -733,7 +747,6 @@ export async function registerRoutes(
       }
 
       const data = await response.json();
-      console.log("Internships upload response:", data);
       res.json(data);
     } catch (err: any) {
       console.error("Internships upload error:", err);
@@ -741,19 +754,16 @@ export async function registerRoutes(
     }
   });
 
-  // Train Model
+  // Train Model (with timeout)
   app.post("/api/admin/train", async (req, res) => {
     console.log("Proxying: POST /admin/train");
     try {
-      const response = await fetch(`${ML_BASE_URL}/admin/train`, { method: "POST" });
-
+      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/train`, { method: "POST" });
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`ML API error: ${response.status} - ${errText}`);
       }
-
       const data = await response.json();
-      console.log("Train response:", data);
       res.json(data);
     } catch (err: any) {
       console.error("Train error:", err);
@@ -761,24 +771,39 @@ export async function registerRoutes(
     }
   });
 
-  // Allocate
+  // Allocate — async job pattern (returns jobId immediately, allocation runs in background)
   app.post("/api/admin/allocate", async (req, res) => {
-    console.log("Proxying: POST /admin/allocate");
-    try {
-      const response = await fetch(`${ML_BASE_URL}/admin/allocate`, { method: "POST" });
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    allocationJobs.set(jobId, { status: 'running', startedAt: Date.now() });
+    res.status(202).json({ jobId, status: 'running', message: 'Allocation started. Poll /api/admin/allocation-status/:jobId' });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`ML API error: ${response.status} - ${errText}`);
+    (async () => {
+      try {
+        console.log(`[Allocation] Job ${jobId} started`);
+        const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/allocate`, { method: "POST" });
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`ML API error: ${response.status} - ${errText}`);
+        }
+        const result = await response.json();
+        allocationJobs.set(jobId, { status: 'done', result, startedAt: allocationJobs.get(jobId)!.startedAt });
+        console.log(`[Allocation] Job ${jobId} done:`, JSON.stringify(result).slice(0, 200));
+      } catch (err: any) {
+        allocationJobs.set(jobId, { status: 'failed', error: err.message, startedAt: allocationJobs.get(jobId)!.startedAt });
+        console.error(`[Allocation] Job ${jobId} failed:`, err.message);
       }
+    })();
+  });
 
-      const data = await response.json();
-      console.log("Allocate response:", data);
-      res.json(data);
-    } catch (err: any) {
-      console.error("Allocate error:", err);
-      res.status(500).json({ error: err.message });
+  // Poll allocation job status
+  app.get("/api/admin/allocation-status/:jobId", (req, res) => {
+    const { jobId } = req.params;
+    const job = allocationJobs.get(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found. It may have expired or the server restarted.' });
     }
+    const elapsedMs = Date.now() - job.startedAt;
+    res.json({ jobId, ...job, elapsedMs });
   });
 
   // Download ML output files
@@ -899,8 +924,7 @@ export async function registerRoutes(
     '123412341234': '+917003365991',  // Test User
   };
 
-  // In-memory OTP storage (for demo - in production use Redis/DB)
-  const otpStore: Map<string, { otp: string; expires: number; phone: string }> = new Map();
+  // OTP now stored in PostgreSQL via storage.saveOtp / getOtp / deleteOtp
 
   // Initialize Twilio client (using dynamic import for ESM compatibility)
   let twilioClient: { client: any; from: string } | null = null;
@@ -939,7 +963,6 @@ export async function registerRoutes(
       // Look up phone number from Aadhaar
       const phone = AADHAAR_PHONE_MAP[aadhaarNumber];
       if (!phone) {
-        // For demo, if Aadhaar not mapped, use first number as fallback
         console.log(`[OTP] Aadhaar ${aadhaarNumber} not mapped, using demo mode`);
         return res.status(400).json({
           success: false,
@@ -947,40 +970,34 @@ export async function registerRoutes(
         });
       }
 
-      // Generate OTP
+      // Generate OTP and persist to DB (survives restarts)
       const otp = generateOTP();
-      const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
-
-      // Store OTP
-      otpStore.set(aadhaarNumber, { otp, expires, phone });
+      const ttlMinutes = parseInt(process.env.OTP_TTL_MINUTES || '5');
+      await storage.saveOtp(aadhaarNumber, otp, phone, ttlMinutes);
 
       // Send SMS via Twilio
       if (twilioClient) {
         try {
           await twilioClient.client.messages.create({
-            body: `Your SIH e-KYC verification code is: ${otp}. Valid for 5 minutes.`,
+            body: `Your SIH e-KYC verification code is: ${otp}. Valid for ${ttlMinutes} minutes.`,
             from: twilioClient.from,
             to: phone
           });
           console.log(`[OTP] SMS sent to ${phone.slice(0, 5)}***`);
         } catch (smsErr: any) {
           console.error('[OTP] SMS send failed:', smsErr.message);
-          // Still return success - OTP is stored for verification
-          // In demo, we can verify even if SMS fails
         }
       } else {
         // Mock mode - log OTP to console
         console.log(`[OTP MOCK] Phone: ${phone}, OTP: ${otp}`);
       }
 
-      // Return masked phone number
       const maskedPhone = phone.slice(0, 5) + '****' + phone.slice(-2);
 
       res.json({
         success: true,
         message: `OTP sent to ${maskedPhone}`,
         maskedPhone,
-        // For demo/testing only - remove in production!
         ...(process.env.NODE_ENV === 'development' ? { debugOtp: otp } : {})
       });
 
@@ -990,7 +1007,7 @@ export async function registerRoutes(
     }
   });
 
-  // POST /api/ekyc/verify-otp - Verify the OTP
+  // POST /api/ekyc/verify-otp - Verify the OTP (DB-backed)
   app.post("/api/ekyc/verify-otp", async (req, res) => {
     try {
       const { aadhaarNumber, otp } = req.body;
@@ -999,23 +1016,19 @@ export async function registerRoutes(
         return res.status(400).json({ success: false, error: 'Aadhaar number and OTP required' });
       }
 
-      const stored = otpStore.get(aadhaarNumber);
+      // getOtp also handles expiry check + auto-delete of expired OTPs
+      const stored = await storage.getOtp(aadhaarNumber);
 
       if (!stored) {
-        return res.status(400).json({ success: false, error: 'No OTP found. Please request a new one.' });
-      }
-
-      if (Date.now() > stored.expires) {
-        otpStore.delete(aadhaarNumber);
-        return res.status(400).json({ success: false, error: 'OTP expired. Please request a new one.' });
+        return res.status(400).json({ success: false, error: 'No OTP found or OTP expired. Please request a new one.' });
       }
 
       if (stored.otp !== otp.trim()) {
         return res.status(400).json({ success: false, error: 'Incorrect OTP. Please try again.' });
       }
 
-      // OTP verified - clean up
-      otpStore.delete(aadhaarNumber);
+      // OTP verified - clean up from DB
+      await storage.deleteOtp(aadhaarNumber);
 
       console.log(`[OTP] Verification successful for Aadhaar ending ${aadhaarNumber.slice(-4)}`);
 

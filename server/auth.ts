@@ -200,7 +200,7 @@ export function setupAuth(app: Express) {
             console.log(`[Auth] Checking registration: name="${userName}", email="${userEmail}"`);
 
             // Check whitelist first (approved objections bypass profanity check)
-            const whitelisted = isWhitelisted(userName, userEmail);
+            const whitelisted = await isWhitelisted(userName, userEmail);
             console.log(`[Auth] Whitelist check: ${whitelisted}`);
 
             // Server-side profanity check BEFORE creating user (skip if whitelisted)

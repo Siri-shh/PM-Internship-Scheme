@@ -1,0 +1,116 @@
+{
+  "total_sectors": 7,
+  "sector_stats": {
+    "Automobile": {
+      "placed": 150,
+      "reservation": {
+        "GEN": 73,
+        "OBC": 42,
+        "SC": 24,
+        "ST": 11
+      },
+      "gender": {
+        "M": 83,
+        "F": 67
+      },
+      "rural_placed": 67,
+      "placement_rate": 0.025
+    },
+    "Electronics": {
+      "placed": 175,
+      "reservation": {
+        "GEN": 76,
+        "OBC": 44,
+        "SC": 31,
+        "ST": 24
+      },
+      "gender": {
+        "M": 88,
+        "F": 84,
+        "O": 3
+      },
+      "rural_placed": 85,
+      "placement_rate": 0.0292
+    },
+    "Finance": {
+      "placed": 232,
+      "reservation": {
+        "GEN": 81,
+        "OBC": 81,
+        "SC": 43,
+        "ST": 27
+      },
+      "gender": {
+        "M": 125,
+        "F": 105,
+        "O": 2
+      },
+      "rural_placed": 120,
+      "placement_rate": 0.0387
+    },
+    "Healthcare": {
+      "placed": 184,
+      "reservation": {
+        "GEN": 68,
+        "OBC": 59,
+        "SC": 33,
+        "ST": 24
+      },
+      "gender": {
+        "F": 98,
+        "M": 84,
+        "O": 2
+      },
+      "rural_placed": 100,
+      "placement_rate": 0.0307
+    },
+    "IT Services": {
+      "placed": 387,
+      "reservation": {
+        "OBC": 137,
+        "GEN": 124,
+        "SC": 70,
+        "ST": 56
+      },
+      "gender": {
+        "F": 191,
+        "M": 191,
+        "O": 5
+      },
+      "rural_placed": 226,
+      "placement_rate": 0.0645
+    },
+    "Marketing": {
+      "placed": 149,
+      "reservation": {
+        "GEN": 69,
+        "OBC": 43,
+        "ST": 21,
+        "SC": 16
+      },
+      "gender": {
+        "F": 79,
+        "M": 64,
+        "O": 6
+      },
+      "rural_placed": 73,
+      "placement_rate": 0.0248
+    },
+    "Mechanical": {
+      "placed": 171,
+      "reservation": {
+        "GEN": 76,
+        "OBC": 55,
+        "SC": 24,
+        "ST": 16
+      },
+      "gender": {
+        "F": 94,
+        "M": 75,
+        "O": 2
+      },
+      "rural_placed": 92,
+      "placement_rate": 0.0285
+    }
+  }
+}
