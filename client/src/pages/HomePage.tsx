@@ -224,6 +224,11 @@ export default function HomePage(): JSX.Element {
       {/* Background gradient layer – full bleed behind everything */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-purple-950 dark:to-blue-900" />
 
+      {/* ⚠️ HACKATHON DEMO BANNER — clearly marks this as a non-official demo */}
+      <div className="w-full bg-amber-500 text-black text-center py-2 px-4 text-sm font-semibold z-50 relative">
+        ⚠️ HACKATHON DEMO — This is a Smart India Hackathon (SIH 2024) prototype. NOT an official Government of India portal. No real data is collected.
+      </div>
+
       <Header />
 
       <section className="py-12 md:py-20 relative z-10">
@@ -374,50 +379,29 @@ export default function HomePage(): JSX.Element {
         </div>
       </section>
 
-      {/* Mobile App Download Section */}
+      {/* About This Demo Section */}
       <section id="mobile-app-section" className="py-16 relative z-10">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid md:grid-cols-2 gap-12 items-center"
+            className="max-w-3xl mx-auto text-center"
           >
-            {/* Left Content */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Download PMIS Mobile Application
+            <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/30 p-8">
+              <h2 className="text-2xl font-bold mb-4 text-amber-800 dark:text-amber-300">
+                📋 About This Project
               </h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Stay connected and manage your internship on the go with our official mobile application. Track applications, receive notifications, and access resources anytime, anywhere.
+              <p className="text-muted-foreground mb-4">
+                This is a <strong>Smart India Hackathon (SIH 2024) prototype</strong> built by Team BSoD.
+                It demonstrates an AI-powered internship allocation system using a modified
+                Gale-Shapley algorithm with LightGBM scoring and fairness-based boosting.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.mca.pm_internship"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors font-semibold"
-                >
-                  Get it on Google Play
-                </a>
-                <div className="flex flex-col items-center">
-                  <p className="text-sm text-muted-foreground mb-2">Scan to Download</p>
-                  <img
-                    src="/images/qr-code-play-store.png"
-                    alt="Download QR Code"
-                    className="w-32 h-32 rounded-lg border-2 border-border"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Right - Phone Mockups */}
-            <div className="relative flex justify-center">
-              <img
-                src="/images/download-pmis-prototype.png"
-                alt="PMIS Mobile App Screenshots"
-                className="w-full max-w-lg"
-              />
+              <p className="text-sm text-muted-foreground">
+                <strong>This is NOT an official Government of India portal.</strong> All data shown is
+                synthetic and for demonstration purposes only. No real Aadhaar numbers, personal
+                information, or government data is collected or stored.
+              </p>
             </div>
           </motion.div>
         </div>

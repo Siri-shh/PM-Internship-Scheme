@@ -1,0 +1,6 @@
+# This is a hackathon demo project — not for public indexing
+User-agent: *
+Disallow: /
+
+# Google Web Risk / Safe Browsing: this is a SIH 2024 student prototype,
+# not an official government portal. No real PII is collected.
