@@ -702,52 +702,84 @@ export async function registerRoutes(
     }
   });
 
-  // Upload Students CSV (with timeout)
-  app.post("/api/admin/upload/students", async (req, res) => {
+  // Upload Students CSV — use https.request to reliably pipe raw multipart bytes
+  app.post("/api/admin/upload/students", (req, res) => {
     console.log("Proxying: POST /admin/upload/students");
     try {
-      const contentType = req.headers["content-type"] || "";
-      const bodyData = req.rawBody ? new Uint8Array(req.rawBody as Buffer) : undefined;
-
-      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/students`, {
-        method: "POST",
-        headers: { "Content-Type": contentType },
-        body: bodyData,
+      const mlUrl = new URL(`${ML_BASE_URL}/admin/upload/students`);
+      const transport = mlUrl.protocol === "https:" ? require("https") : require("http");
+      const proxyReq = transport.request(
+        {
+          hostname: mlUrl.hostname,
+          port: mlUrl.port || (mlUrl.protocol === "https:" ? 443 : 80),
+          path: mlUrl.pathname,
+          method: "POST",
+          headers: {
+            "content-type": req.headers["content-type"],
+            "content-length": req.rawBody?.length ?? 0,
+          },
+          timeout: ML_TIMEOUT_MS,
+        },
+        (proxyRes: any) => {
+          let data = "";
+          proxyRes.on("data", (chunk: any) => { data += chunk; });
+          proxyRes.on("end", () => {
+            if (proxyRes.statusCode >= 300) {
+              console.error(`Students upload ML error ${proxyRes.statusCode}:`, data);
+              return res.status(500).json({ error: `ML API error: ${proxyRes.statusCode} - ${data}` });
+            }
+            try { res.json(JSON.parse(data)); } catch { res.send(data); }
+          });
+        }
+      );
+      proxyReq.on("error", (err: any) => {
+        console.error("Students upload proxy error:", err.message);
+        res.status(500).json({ error: err.message });
       });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`ML API error: ${response.status} - ${errText}`);
-      }
-
-      const data = await response.json();
-      res.json(data);
+      if (req.rawBody) proxyReq.write(req.rawBody);
+      proxyReq.end();
     } catch (err: any) {
       console.error("Students upload error:", err);
       res.status(500).json({ error: err.message });
     }
   });
 
-  // Upload Internships CSV (with timeout)
-  app.post("/api/admin/upload/internships", async (req, res) => {
+  // Upload Internships CSV — same pattern
+  app.post("/api/admin/upload/internships", (req, res) => {
     console.log("Proxying: POST /admin/upload/internships");
     try {
-      const contentType = req.headers["content-type"] || "";
-      const bodyData = req.rawBody ? new Uint8Array(req.rawBody as Buffer) : undefined;
-
-      const response = await fetchWithTimeout(`${ML_BASE_URL}/admin/upload/internships`, {
-        method: "POST",
-        headers: { "Content-Type": contentType },
-        body: bodyData,
+      const mlUrl = new URL(`${ML_BASE_URL}/admin/upload/internships`);
+      const transport = mlUrl.protocol === "https:" ? require("https") : require("http");
+      const proxyReq = transport.request(
+        {
+          hostname: mlUrl.hostname,
+          port: mlUrl.port || (mlUrl.protocol === "https:" ? 443 : 80),
+          path: mlUrl.pathname,
+          method: "POST",
+          headers: {
+            "content-type": req.headers["content-type"],
+            "content-length": req.rawBody?.length ?? 0,
+          },
+          timeout: ML_TIMEOUT_MS,
+        },
+        (proxyRes: any) => {
+          let data = "";
+          proxyRes.on("data", (chunk: any) => { data += chunk; });
+          proxyRes.on("end", () => {
+            if (proxyRes.statusCode >= 300) {
+              console.error(`Internships upload ML error ${proxyRes.statusCode}:`, data);
+              return res.status(500).json({ error: `ML API error: ${proxyRes.statusCode} - ${data}` });
+            }
+            try { res.json(JSON.parse(data)); } catch { res.send(data); }
+          });
+        }
+      );
+      proxyReq.on("error", (err: any) => {
+        console.error("Internships upload proxy error:", err.message);
+        res.status(500).json({ error: err.message });
       });
-
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`ML API error: ${response.status} - ${errText}`);
-      }
-
-      const data = await response.json();
-      res.json(data);
+      if (req.rawBody) proxyReq.write(req.rawBody);
+      proxyReq.end();
     } catch (err: any) {
       console.error("Internships upload error:", err);
       res.status(500).json({ error: err.message });
