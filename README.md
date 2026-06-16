@@ -1,10 +1,11 @@
 # SIH_BSoD — PM Internship Allocation Portal
 
-Smart India Hackathon (SIH) Project
 A centralized, secure, and ML-driven platform for fair, transparent, and auditable internship allocation under the Prime Minister Internship Scheme.
-<p align="center">
-  <img width="327" height="345" alt="image" src="https://github.com/user-attachments/assets/0ac163ba-aee4-4c4d-8f6a-f622223912f5" />
-</p>
+
+## Live Deployments
+
+- **Web Portal:** [https://sih-bsod-portal.onrender.com/](https://sih-bsod-portal.onrender.com/)
+- **ML Allocation Service:** [https://pm-internship-ml.onrender.com/](https://pm-internship-ml.onrender.com/)
 
 ---
 
@@ -19,106 +20,42 @@ A centralized, secure, and ML-driven platform for fair, transparent, and auditab
 
 ---
 
-## Table of Contents
+## Overview
 
-1. Introduction and Vision
-2. Problem Statement
-3. Solution Overview
-4. Core Features
-5. System Architecture
-6. Allocation Engine (ML Backend)
-7. Technology Stack
-8. Project Structure
-9. Getting Started
-10. Environment Configuration
-11. Database Architecture
-12. API Overview (Exhaustive)
-13. Security, Authentication and Authorization
-14. Licensing and Legal Compliance
-15. Screenshots and Demo Guide
+Large-scale internship allocation programs often suffer from manual errors, lack of transparency, and difficulties in enforcing reservation policies. SIH_BSoD solves these issues through automated algorithmic matching (based on the Gale-Shapley stable matching model), machine learning-based student scoring, and a secure full-stack portal.
 
 ---
 
+## Core Features
 
+### Authentication & Security
+- **Role-Based Access Control (RBAC):** Separate interfaces and permissions for Students, Companies, and Admins.
+- **Hybrid Auth:** Passport.js session-based auth combined with JWT tokens.
+- **Rate Limiting:** IP-based brute-force protection (5 failed attempts locks out for 5 minutes).
+- **Bot Protection:** Integrated with Google reCAPTCHA v2.
+- **Content Moderation:** Profanity filtering with admin review workflows.
 
+### Student Portal
+- **Profile Management:** Input academic metrics, skills, gender, reservation category, and location preferences.
+- **Aadhaar e-KYC Simulation:** QR code scanner + Twilio OTP verification (no raw Aadhaar numbers are stored).
+- **Preference Ranking:** Select and rank up to 6 internship preferences.
+- **Real-time Tracking:** Track allocation status and check career hub insights.
+- **Multilingual AI Chatbot:** Support for English, Hindi, Hinglish, and Gujarati.
 
-## 1️ Introduction & Vision
+### Company Portal
+- **Role Management:** Post internships, manage requirements, and set student capacities.
+- **Analytics Dashboard:** Monitor internship statistics, skill distributions, and applicant match metrics.
+- **Candidate Discovery:** View ML-matched candidates ranked by suitability.
 
-The **PM Internship Allocation Portal (SIH_BSoD)** is a full-stack platform built to manage the **end-to-end lifecycle of internship allocation** at a national scale. The system prioritizes **fairness, transparency, security, scalability, and auditability**, making it suitable for real-world government deployment.
-
----
-
-## 2️ Problem Statement
-
-Large-scale internship allocation programs face challenges such as:
-
-* Manual or opaque allocation mechanisms
-* Inconsistent enforcement of reservation policies
-* Lack of explainability and audit trails
-* Weak identity verification
-* Poor scalability under heavy load
-
-SIH_BSoD addresses these issues using **algorithmic matching**, **machine learning**, and **robust system architecture**.
-
----
-
-## 3️ Solution Overview
-
-The solution is built as a **distributed, service-oriented system** consisting of:
-
-* A modern **React-based frontend** for all stakeholders
-* A secure **Node.js + Express backend** for business logic
-* A **PostgreSQL database** with schema-level sharding
-* An **external ML allocation engine** (Python) deployed independently
-* Secure integrations with third-party services (Twilio, reCAPTCHA, Email, AI)
+### Admin Portal
+- **System Control:** Run and monitor allocation rounds, and view fairness metrics (gender, category, geography).
+- **Moderation Queue:** Approve/reject content flagged by the profanity filter.
+- **Audit Logging:** Maintain logs of logins, admin actions, and allocation runs.
+- **Data Portability:** CSV upload/sync and full database exports.
 
 ---
 
-## 4️ Core Features
-
-###  Authentication & Security
-
-* Role-Based Access Control (Student, Company, Admin)
-* Dual authentication system (Passport.js sessions + JWT tokens)
-* IP-based brute-force protection (5 attempts → 5-minute lockout)
-* Google reCAPTCHA v2
-* scrypt-based password hashing with unique salts
-* Profanity filtering with admin objection workflow
-
-###  Student Portal
-
-* Profile management (GPA, skills, gender, category, rural/urban)
-* Aadhaar-based e-KYC using QR scanning + Twilio OTP
-* Selection of up to 6 ranked internship preferences
-* Smart search and filtering
-* Real-time allocation tracking
-* Career hub and insights
-* Multilingual AI chatbot (English, Hindi, Hinglish, Gujarati)
-
-###  Company Portal
-
-* Company onboarding and profile setup
-* Internship creation and role management
-* KPI dashboard (offers sent, acceptances, acceptance rate)
-* View ML-matched candidates
-* Skill distribution analytics
-
-###  Admin Portal
-
-* System-wide dashboards
-* CSV upload or DB sync
-* Trigger and monitor allocation runs
-* Fairness metrics (gender, category, rural/urban)
-* Allocation round logs and per-student breakdown
-* Audit logs (sessions, user events, allocation history)
-* Profanity objection review
-* CSV exports
-
----
-
-## 5️ System Architecture
-
-The system architecture defines **how each component interacts**, where **security boundaries exist**, and how **scalability and fault isolation** are achieved.
+## System Architecture
 
 ```
 ┌──────────────────────────┐
@@ -161,30 +98,13 @@ The system architecture defines **how each component interacts**, where **securi
 │ - Reservation Enforcement        │
 │ - Fairness Metrics               │
 │                                  │
-│ Hosted on Railway                │
+│ Hosted on Render                 │
 └──────────────────────────────────┘
 ```
 
-This architecture ensures:
-
-* Strong isolation between frontend, backend, database, and ML
-* Independent scaling of ML services
-* Centralized security and authorization
-* Full auditability for government compliance
-
 ---
 
-## 6️ Allocation Engine (ML Backend)
-
-* Algorithm: Modified **Gale–Shapley (Deferred Acceptance)**
-* ML-based scoring using academic history, skills, and geographic preferences
-* Reservation enforcement at every allocation step
-* Fairness metrics generation
-* Deployed as an independent Python service on Railway
-
----
-
-## 7️ Technology Stack
+## Technology Stack
 
 | Layer      | Technologies                                                       |
 | ---------- | ------------------------------------------------------------------ |
@@ -192,115 +112,66 @@ This architecture ensures:
 | Backend    | Node.js, Express.js, Passport.js                                   |
 | Database   | PostgreSQL (Neon Serverless), Drizzle ORM                          |
 | Caching    | Redis (optional)                                                   |
-| ML Service | Python (Railway)                                                   |
+| ML Service | Python, FastAPI (Render)                                           |
 | OTP/SMS    | Twilio                                                             |
 | Email      | Nodemailer (Gmail SMTP)                                            |
 | AI Chatbot | GROQ API (LLaMA)                                                   |
 
 ---
 
-## 8. Project Structure
-
-The repository is organized as a multi-module system separating frontend, backend, database, and machine learning services.
+## Project Structure
 
 ```
 SIH_BSoD/
 │
 ├── .env.example                 # Sample environment variables
-├── .gitignore
-├── LICENSE
-├── README.md
-│
 ├── package.json                 # Root scripts & shared dependencies
-├── package-lock.json
 ├── components.json
 ├── drizzle.config.ts
-├── railway.toml                 # Deployment config (Railway)
-├── postcss.config.js
 ├── tailwind.config.ts
 ├── tsconfig.json
 ├── vite.config.ts
 │
 ├── client/                      # Frontend (React + Vite)
-│   ├── index.html
-│   ├── public/
-│   │   ├── favicon.png
-│   │   └── images/
-│   │
-│   └── src/
-│       ├── main.tsx             # Frontend entry point
-│       ├── App.tsx              # App root
-│       ├── index.css
-│       │
-│       ├── components/          # Reusable UI components
-│       ├── pages/               # Page-level routes (Student/Admin/Company)
-│       ├── hooks/               # Custom React hooks
-│       ├── lib/                 # API clients, helpers, auth utilities
-│       └── types/               # TypeScript definitions
+│   ├── src/
+│   │   ├── main.tsx             # Frontend entry point
+│   │   ├── components/          # Reusable UI components
+│   │   ├── pages/               # Student, Admin, and Company routes
+│   │   └── hooks/               # Custom React hooks
+│   └── public/
 │
-├── dbms/                        # Database layer (PostgreSQL)
-│   ├── applications.sql
-│   ├── candidates.sql
-│   ├── companies.sql
-│   ├── internships.sql
-│   ├── match_results.sql
+├── dbms/                        # Database schemas & migrations
 │   ├── migrations/              # Schema & partition migrations
 │   └── data/                    # Seed & sample datasets
 │
-├── ml-service/                  # Backend + ML Service (FastAPI)
-│   │
-│   ├── internship-ml-backend-with-better-AUC/
-│   │   ├── Dockerfile           # Backend container definition
-│   │   ├── docker-compose.yml   # Local / prod service orchestration
-│   │   ├── requirements.txt
-│   │   ├── README.md
-│   │
-│   │   ├── backend/
-│   │   │   └── app/
-│   │   │       ├── main.py      # 🚀 MAIN BACKEND SERVER (FastAPI)
-│   │   │       ├── models.py    # ML & data models
-│   │   │       │
-│   │   │       ├── routers/     # API endpoints
-│   │   │       │   ├── admin_api.py
-│   │   │       │   ├── student_api.py
-│   │   │       │   ├── dashboard_api.py
-│   │   │       │   └── upload_api.py
-│   │   │       │
-│   │   │       └── services/    # Core ML logic
-│   │   │           ├── allocate_service.py
-│   │   │           ├── model_service.py
-│   │   │           ├── predict_service.py
-│   │   │           └── train_service.py
-│   │
-│   │   ├── data/                # ML datasets
-│   │   └── json_outputs/        # Allocation & fairness reports
-│
-└── docs/                        # Documentation & references
-    ├── question_statement_and_approach.md
-    ├── ml_model_variables.txt
-    └── datasets/
-
+└── ml-service/                  # Machine Learning FastAPI backend
+    └── internship-ml-backend/
+        └── backend/
+            └── app/
+                ├── main.py      # FastAPI Server
+                ├── models.py    # ML & data models
+                └── services/    # Core ML logic & Gale-Shapley matching
+```
 
 ---
-```
-## 9️ Getting Started
 
-### Install Dependencies
+## Getting Started
 
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### Run Development Server
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env` and fill in the required credentials (see Environment Configuration below).
 
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
+The client runs on `http://localhost:5173` and backend runs on `http://localhost:5000`.
 
-Server runs on `http://localhost:5000`
-
-### Database Setup
-
+### 4. Database Setup
 ```bash
 npm run db:push
 npx tsx script/seed.ts
@@ -308,128 +179,36 @@ npx tsx script/seed.ts
 
 ---
 
-## 10 Environment Configuration
+## Environment Configuration
 
+Create a `.env` file in the root directory and configure the following variables:
 
+### Server Settings
+- `PORT`: Server port (defaults to `5000`)
 
-## Environment Variables
-
-### Server Configuration
-- **PORT**: 5000  
-  Port on which the backend server runs.
-
-### Authentication and Security
-- **JWT_SECRET**: your-jwt-secret  
-  Secret key used to sign JWT access tokens.
-
-- **SESSION_SECRET**: your-session-secret  
-  Secret used for session-based authentication (Passport.js).
+### Authentication & Security
+- `JWT_SECRET`: Secret key used to sign JWT access tokens.
+- `SESSION_SECRET`: Secret used for session-based authentication (Passport.js).
 
 ### Database
-- **DATABASE_URL**: postgresql://user:password@host:5432/database  
-  PostgreSQL connection string (Neon Serverless).
+- `DATABASE_URL`: PostgreSQL connection string (Neon Serverless).
 
-### Machine Learning Backend
-- **ML_BASE_URL**: https://internship-ml-backend-production.up.railway.app  
-  Endpoint for the external ML allocation service.
+### ML Allocation Service
+- `ML_BASE_URL`: Endpoint for the external ML allocation service (default: `https://pm-internship-ml.onrender.com`).
 
-### Bot Protection
-- **VITE_RECAPTCHA_SITE_KEY**: your-recaptcha-site-key  
-  Google reCAPTCHA v2 site key.
-
-### SMS / OTP Service (Twilio)
-- **TWILIO_ACCOUNT_SID**: your-twilio-sid  
-- **TWILIO_AUTH_TOKEN**: your-twilio-token  
-- **TWILIO_FROM**: +1234567890  
-
-### Email Service
-- **SMTP_HOST**: smtp.gmail.com  
-- **SMTP_PORT**: 587  
-- **SMTP_USER**: your-email@gmail.com  
-- **SMTP_PASS**: your-app-password  
-
-### Caching (Optional)
-- **REDIS_URL**: redis://localhost:6379  
-
-### AI Chatbot
-- **GROQ_API_KEY**: your-groq-api-key  
-
+### Integrations
+- `VITE_RECAPTCHA_SITE_KEY`: Google reCAPTCHA v2 site key.
+- `TWILIO_ACCOUNT_SID`: Twilio account ID.
+- `TWILIO_AUTH_TOKEN`: Twilio auth token.
+- `TWILIO_FROM`: Twilio sender phone number.
+- `SMTP_HOST`: SMTP server host (e.g., `smtp.gmail.com`).
+- `SMTP_PORT`: SMTP port (e.g., `587`).
+- `SMTP_USER`: Email address for notifications.
+- `SMTP_PASS`: SMTP email app password.
+- `GROQ_API_KEY`: Groq API key for the LLaMA chatbot.
 
 ---
 
-## 1️1️ Database Architecture
+## License
 
-* PostgreSQL with schema-level sharding
-* Tier-based state partitioning
-* Foreign keys enforced with `ON DELETE CASCADE`
-
----
-
-## 1️2️ API Overview (Exhaustive)
-
-All application-level APIs are grouped below. Internal middleware utilities are excluded.
-
-### Authentication
-
-* POST `/api/register`
-* POST `/api/login`
-* POST `/api/logout`
-* POST `/api/auth/login`
-* POST `/api/auth/refresh`
-
-### Students
-
-* GET `/api/student/:studentId`
-* POST `/api/student/:studentId/preferences`
-* GET `/api/internships`
-
-### Companies
-
-* GET `/api/company/profile`
-* POST `/api/company/register`
-* GET `/api/company/allocations`
-
-### Admin
-
-* GET `/api/admin/stats`
-* POST `/api/admin/run-allocation`
-* GET `/api/admin/audit/*`
-
-### ML Integration
-
-* POST `/api/ml/sync/candidates`
-* POST `/api/ml/sync/internships`
-* POST `/api/ml/run`
-* GET `/api/ml/status/:runId`
-* GET `/api/ml/results/:runId`
-* GET `/api/ml/fairness/:runId`
-
----
-
-## 1️3️ Security, Authentication & Authorization
-
-* Role-based access control at route level
-* Admin-only privileged endpoints
-* Session-based auth + JWT hybrid model
-* Full audit logging
-* No Aadhaar number storage
-
----
-
-## 1️4️ Licensing & Legal Compliance
-
-This project is licensed under the **MIT License**.
-
----
-
-## 1️5️ Screenshots & Demo Guide(Yet to be added)
-
-Recommended screenshots:
-
-1. Landing page
-2. Student portal
-3. Company dashboard
-4. Admin dashboard
-5. Allocation results & fairness metrics
-
----
+This project is licensed under the [MIT License](LICENSE).

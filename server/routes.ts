@@ -14,7 +14,7 @@ import {
   isWhitelisted
 } from "./emailService";
 
-const ML_BASE_URL = (process.env.ML_BASE_URL || "https://internship-ml-backend-production.up.railway.app").replace(/\/+$/, "");
+const ML_BASE_URL = (process.env.ML_BASE_URL || "https://pm-internship-ml.onrender.com").replace(/\/+$/, "");
 const ML_TIMEOUT_MS = 120_000; // 120 seconds for long ML operations
 
 // In-memory allocation job store (short-lived — acceptable to reset on restart)
